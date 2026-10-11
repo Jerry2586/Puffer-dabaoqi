@@ -1,0 +1,17 @@
+{
+  "format": "hetun-native-base",
+  "version": 1,
+  "id": "hetun-android-base",
+  "name": "河豚 Android 原生工程",
+  "os": "android",
+  "devices": [
+    "mobile",
+    "tablet",
+    "tv"
+  ],
+  "contract": "hetun-config-v1",
+  "wrapperJar": "gradle/wrapper/gradle-wrapper.jar",
+  "assetsDir": "app/src/main/assets/apps/{appid}/www",
+  "task": ":app:assembleRelease",
+  "apk": "app/build/outputs/apk/release/app-release-unsigned.apk"
+}

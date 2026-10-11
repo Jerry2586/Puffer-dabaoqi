@@ -1,0 +1,9 @@
+{
+  "name": "hetun-packer-build-environment",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  }
+}
