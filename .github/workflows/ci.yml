@@ -12,9 +12,6 @@ jobs:
   source-checks:
     runs-on: windows-latest
     timeout-minutes: 25
-    env:
-      HETUN_TOOLS_ROOT: ${{ runner.temp }}/hetun-tools
-      HETUN_PACKER_BUILD_ROOT: ${{ runner.temp }}/hetun-packer
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -25,6 +22,11 @@ jobs:
         run: npm run check
       - name: Run automated tests
         run: npm test
+      - name: Set external environment directories
+        shell: pwsh
+        run: |
+          "HETUN_TOOLS_ROOT=$env:RUNNER_TEMP/hetun-tools" >> $env:GITHUB_ENV
+          "HETUN_PACKER_BUILD_ROOT=$env:RUNNER_TEMP/hetun-packer" >> $env:GITHUB_ENV
       - name: Prepare external desktop dependencies
         run: npm run setup
       - name: Build Windows installers
