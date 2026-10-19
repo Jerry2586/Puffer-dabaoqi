@@ -23,8 +23,12 @@ jobs:
       - name: Run automated tests
         run: npm test
       - name: Set external environment directories
+        id: metadata
         shell: pwsh
         run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          "version=$version" >> $env:GITHUB_OUTPUT
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") { throw 'Tag and package version differ' }
           "HETUN_TOOLS_ROOT=$env:RUNNER_TEMP/hetun-tools" >> $env:GITHUB_ENV
           "HETUN_PACKER_BUILD_ROOT=$env:RUNNER_TEMP/hetun-packer" >> $env:GITHUB_ENV
       - name: Prepare external desktop dependencies
@@ -36,7 +40,29 @@ jobs:
         with:
           name: packer-windows
           path: |
-            ${{ env.HETUN_PACKER_BUILD_ROOT }}/release/v*/*.exe
-            ${{ env.HETUN_PACKER_BUILD_ROOT }}/release/v*/SHA256SUMS.txt
-            ${{ env.HETUN_PACKER_BUILD_ROOT }}/release/v*/release-manifest.json
+            ${{ env.HETUN_PACKER_BUILD_ROOT }}/release/v${{ steps.metadata.outputs.version }}/*.exe
+            ${{ env.HETUN_PACKER_BUILD_ROOT }}/release/v${{ steps.metadata.outputs.version }}/SHA256SUMS.txt
+            ${{ env.HETUN_PACKER_BUILD_ROOT }}/release/v${{ steps.metadata.outputs.version }}/release-manifest.json
           if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: source-checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: packer-windows
+          path: release
+      - name: Verify and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cd release
+          node -e 'const m=require("./release-manifest.json"); if ("v"+m.version!==process.env.GITHUB_REF_NAME || m.revision!==process.env.GITHUB_SHA || m.artifacts.length!==2) throw Error("Release version/revision/artifacts mismatch");'
+          sha256sum -c SHA256SUMS.txt
+          gh release create "$GITHUB_REF_NAME" ./*.exe SHA256SUMS.txt release-manifest.json --verify-tag --latest --title "河豚打包器 $GITHUB_REF_NAME" --notes-file "$GITHUB_WORKSPACE/RELEASE-NOTES.md"

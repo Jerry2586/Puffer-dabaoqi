@@ -1,6 +1,6 @@
-# 河豚打包器：原生构建开发版
+# 河豚打包器 0.4.0
 
-保留 Electron 工作台界面，客户端构建改为 Kotlin Android、SwiftUI iOS、C# WPF Windows。当前构建入口不再编译 uni-app，也不需要 DCloud AppID/AppKey。软件版本仍为 0.3.1，本轮未发布正式版。
+保留 Electron 工作台界面，客户端构建改为 Kotlin Android、SwiftUI iOS、C# WPF Windows。当前构建入口不再编译 uni-app，也不需要 DCloud AppID/AppKey。软件版本为 0.4.0，Windows 安装版和便携版见本仓库 Releases；客户端业务与真机验证范围见下文。
 
 ## 本地运行
 
@@ -26,7 +26,7 @@
 
 ## 检查与发行
 
-npm run check 检查 JS/CJS 语法；npm test 执行本地功能测试。原生客户端需另外运行编译验证，iOS 必须在 Mac 验证。npm run build 是打包器自身的正式 Windows 发行命令，本轮不执行。
+npm run check 检查 JS/CJS 语法；npm test 执行本地功能测试。原生客户端需另外运行编译验证，iOS 必须在 Mac 验证。npm run build 是打包器自身的 Windows 发行命令。推送与 package.json 一致的版本标签后，CI 校验、构建、核对摘要并发布安装包和便携版。发行说明见 RELEASE-NOTES.md。
 
 公共环境默认位于 %LOCALAPPDATA%/Programs/UniAppTools，目录名为历史兼容名称。可用 HETUN_TOOLS_ROOT、HETUN_PACKER_BUILD_ROOT、HETUN_PACKER_DEV 指定外部位置；依赖、签名和产物都在源码之外。开发模式使用隔离的 local-development 档案。
 
