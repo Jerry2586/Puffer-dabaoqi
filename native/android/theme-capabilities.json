@@ -1,0 +1,48 @@
+{
+  "renderer": "hetun-kotlin-core-v1",
+  "themeFields": [
+    "schemaVersion",
+    "brand.name",
+    "brand.tagline",
+    "colors.background",
+    "colors.accent",
+    "colors.text",
+    "navigation",
+    "navigation[].id",
+    "navigation[].label",
+    "navigation[].enabled",
+    "navigation[].page",
+    "navigation[].categoryId",
+    "categories",
+    "categories[].id",
+    "categories[].label",
+    "categories[].enabled",
+    "categories[].categoryId",
+    "sections",
+    "sections[].id",
+    "sections[].enabled",
+    "sections[].page",
+    "sections[].title",
+    "sections[].categoryId",
+    "sections[].manualIds",
+    "sections[].limit"
+  ],
+  "themeValues": {
+    "schemaVersion": [
+      1,
+      2
+    ],
+    "navigation[].page": [
+      "home",
+      "category",
+      "search",
+      "member",
+      "mine",
+      "ranking",
+      "schedule"
+    ],
+    "sections[].page": [
+      "home"
+    ]
+  }
+}

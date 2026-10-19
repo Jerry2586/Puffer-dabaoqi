@@ -12,7 +12,7 @@ android {
   versionName = runtime["versionName"] as String
  }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
- // Local offline demonstration: run full lint separately before formal release.
+ // Base APK compilation uses cached dependencies; release lint must run separately.
  lint { checkReleaseBuilds = false }
  buildTypes { getByName("release") { isMinifyEnabled = false } }
 }

@@ -20,4 +20,10 @@ async function readPeer(role,root=linkRoot(),now=Date.now()){
  if(!['packer','theme-center'].includes(role))throw Error('本机软件标识无效');
  try{const file=path.join(root,role+'.json');if((await fs.stat(file)).size>4096)return null;const peer=JSON.parse(await fs.readFile(file,'utf8')),age=now-Date.parse(peer.updatedAt);return peer.protocol===1&&Number.isFinite(age)&&age>=0&&age<8000?peer:null;}catch{return null;}
 }
-module.exports={MAX,linkRoot,validId,atomic,queueTheme,readStatus,readPeer};
+
+async function readCapabilities(root=linkRoot()){
+ if(!await readPeer('packer',root))return null;
+ try{const file=path.join(root,'packer-capabilities.json');if((await fs.stat(file)).size>65536)return null;const data=JSON.parse(await fs.readFile(file,'utf8')),age=Date.now()-Date.parse(data.updatedAt);if(data.protocol!=='hetun-local-capabilities'||data.version!==1||!Number.isFinite(age)||age<0||age>=8000)return null;return data;}catch{return null;}
+}
+
+module.exports={MAX,linkRoot,validId,atomic,queueTheme,readStatus,readPeer,readCapabilities};

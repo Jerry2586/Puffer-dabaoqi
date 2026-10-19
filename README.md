@@ -1,33 +1,31 @@
-# 河豚打包器 0.4.0
+# 河豚打包器 0.5.0
 
-保留 Electron 工作台界面，客户端构建改为 Kotlin Android、SwiftUI iOS、C# WPF Windows。当前构建入口不再编译 uni-app，也不需要 DCloud AppID/AppKey。软件版本为 0.4.0，Windows 安装版和便携版见本仓库 Releases；客户端业务与真机验证范围见下文。
+本地工作链：原生源码首次编译为协议基础 APK → 主题中心制作主题 → 打包器导入基础 APK 和主题 → 写入配置、自有签名 → 成品 APK。
 
-## 本地运行
+本版将日常出包调整为协议基础 APK 二次打包。桌面界面保留 Electron，日常二次打包不使用 uni-app、DCloud、源码编译或 Gradle。
 
-使用 Node.js 22，运行 npm run dev。Electron 依赖位于源码之外的公共环境。npm run setup 用锁文件安装桌面开发依赖，首次安装需要网络；已备齐环境后，制作主题、传递主题、导出原生源码及 Android/Windows 构建均使用本地文件和缓存。构建本身不自动下载缺失依赖。
+## 使用边界
 
-主题中心通过 hetun-local-theme v1 本机文件队列发送，打包器校验摘要、资源路径和设备后绑定主题。当前不启动云授权、在线更新或云构建。界面保留已有应用档案和 R007 连接。旧源码路径不会自动执行；必须导入与当前平台匹配、接入统一协议的客户端源码目录或 ZIP。未导入源码时禁止构建。主题中心保存的主题自动出现在对应设备的列表中，两个软件均显示本机连接状态。
+- 主题中心负责主题及素材，后台地址不从主题包导入。
+- 打包器负责基础 APK、主题兼容检查、版本、后台地址和自有 JKS 签名。
+- 基础 APK 必须接入 hetun-package-v1，包含真实原生主题渲染器。任意 APK 不能直接换肤。
+- 包名固定为基础 APK 的实际包名。图标、权限、原生代码及新主题能力变更应重新制作基础包。
+- 已实现 Android APK 二进制重打包；IPA 和 EXE 尚未实现，软件会阻止构建。
 
-## 客户端技术与环境
+## 本地启动与环境
 
-| 设备 | 技术 | 产物与要求 |
-|---|---|---|
-| Android 手机、平板、TV | Kotlin + 原生 View | APK；JDK 21、SDK 36、Gradle 9.8.1、AGP 9.4.1 缓存、自有 JKS |
-| iPhone、iPad | SwiftUI + AVKit | Swift 工程；IPA 需要自有 Mac、Xcode 26、Apple Team 与签名 |
-| Windows | C# WPF / .NET 10 | EXE；构建需 .NET 10 SDK，运行需 .NET 10 Desktop Runtime |
+使用 Node.js 22，运行 npm run dev。Electron 依赖位于源码外；npm run setup 首次下载依赖需要网络。正式运行与本机主题互联不要求云授权或云任务。
 
-“导出原生源码工程”不要求安装编译器，也不要求在线影视后台。导入自己的原生源码、填写包名并选择当前设备主题后，导出合并后的工程 ZIP，用于继续修改和二次编译。现成任意 APK 不具备本项目主题协议，不能直接导入换肤。
+日常 APK 打包只需要本机 JDK 和 Android Build Tools（zipalign、aapt、apksigner），以及自己的 JKS。工具不自动下载。只有开发者首次制作或更新基础 APK 时才需要 Gradle、Android 编译 SDK 和已缓存依赖，该流程使用 scripts/create-base.cjs，与工作台日常出包分离。
 
-运行时统一使用 runtime.json 与 hetun-skeleton v2 主题包。仓库内示例原生渲染支持基础品牌、颜色、导航、分类、栏目标题、影片列表、搜索、会员登录和系统播放。复杂轮播、广告、节日装饰以及编辑器逐像素布局尚未完成映射；SwiftUI 当前栏目共用分类结果。后端为空时只显示基础离线主题。
+主题中心保存的主题会自动出现在打包器相应设备的列表。双方显示真实心跳连接；主题中心的“打包接口”显示已保存主题与当前基础 APK 的兼容结果。收到主题不代表原生端实现了所有主题效果。
 
-## 后台与苹果 CMS
+Kotlin 基础渲染器只支持 native/android/theme-capabilities.json 的字段。完整编辑器的复杂轮播、广告、节日装饰和逐像素布局尚未全部映射，不兼容的主题会明确拒绝。源码编译通过、签名成功与真机业务可用分别验收。
 
-各端统一调用 HTTPS 河豚网关；苹果 CMS v10 位于网关后面，不等于 iOS。网关接口约定见“原生构建说明.md”。本次没有新增或部署 CMS 服务，没有验证真实站点的登录、解析、支付或播放兼容性。不要把原生工程成功编译理解为业务已经联通。
+## 接口与测试
 
-## 检查与发行
+固定接口及数据责任见 PACKAGE-CONTRACT.md，架构见 ARCHITECTURE.md。业务客户端统一调用 HTTPS 河豚网关，由后台对接苹果 CMS v10；本地主题服务不充当运营后台。
 
-npm run check 检查 JS/CJS 语法；npm test 执行本地功能测试。原生客户端需另外运行编译验证，iOS 必须在 Mac 验证。npm run build 是打包器自身的 Windows 发行命令。推送与 package.json 一致的版本标签后，CI 校验、构建、核对摘要并发布安装包和便携版。发行说明见 RELEASE-NOTES.md。
+npm run check 检查脚本语法；npm test 执行本地测试。npm run build 构建打包器自身的 Windows 软件，与产出客户端 APK 是两条流程。正式发布、推送及覆盖安装需按本轮用户指令执行。
 
-公共环境默认位于 %LOCALAPPDATA%/Programs/UniAppTools，目录名为历史兼容名称。可用 HETUN_TOOLS_ROOT、HETUN_PACKER_BUILD_ROOT、HETUN_PACKER_DEV 指定外部位置；依赖、签名和产物都在源码之外。开发模式使用隔离的 local-development 档案。
-
-本地演示 Android 模板关闭随 assembleRelease 执行的 Lint（本机尚未备齐 lint-gradle 依赖），不代表 Lint 验收通过。正式发行前必须补齐离线依赖并单独运行 lintRelease。
+公共开发环境默认位于 %LOCALAPPDATA%/Programs/UniAppTools。依赖、运行状态、签名和 APK 产物均存于源码外。开发模式使用隔离的 local-development 档案。

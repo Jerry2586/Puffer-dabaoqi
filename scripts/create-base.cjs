@@ -1,0 +1,21 @@
+'use strict';
+const fs=require('node:fs/promises'),path=require('node:path');const {copyTree}=require('../core/native-project.cjs');const {run}=require('../core/process.cjs');
+async function createBase({source,output,config,tools,capabilities}){
+ if(!source||!output||!config||!capabilities)throw Error('需要原生源码、独立输出目录、应用配置与真实渲染能力声明');
+ if(config.os!=='android'||!['mobile','tablet','tv'].includes(config.device))throw Error('仅支持 Android 基础包开发');
+ const {inside}=require('../core/domain.cjs');if(inside(source,output)||inside(output,source))throw Error('源码与基础包开发输出目录不能重叠');
+ await fs.mkdir(path.dirname(output),{recursive:true});await fs.mkdir(output);await copyTree(source,output);
+ const assets=path.join(output,'app/src/main/assets');await fs.mkdir(assets,{recursive:true});
+ const descriptor={format:'hetun-base-apk',version:1,contract:'hetun-package-v1',runtime:'hetun-runtime-v1',theme:'hetun-skeleton-v2',os:'android',assetRoot:'assets/',packageName:config.packageName,devices:[config.device],...capabilities};
+ require('../core/package-contract.cjs').validateBase(descriptor);
+ await fs.writeFile(path.join(assets,'hetun-base.json'),JSON.stringify(descriptor,null,2));await fs.writeFile(path.join(output,'runtime.json'),JSON.stringify(config));await fs.writeFile(path.join(assets,'runtime.json'),JSON.stringify(config));
+ const initial={format:'hetun-skeleton',version:2,renderer:'hetun-v2',id:'base-initial',name:'基础包初始主题',platform:config.device,theme:{schemaVersion:2,brand:{name:config.name},sections:[],navigation:[{id:'home',label:'首页',enabled:true,page:'home'}]}};
+ const check=require('../core/package-contract.cjs').compatibility(descriptor,initial,config.device);if(!check.ready)throw Error(check.errors.join('；'));
+ await fs.writeFile(path.join(assets,'manifest.json'),JSON.stringify(initial));
+ const tv=config.device==='tv';await fs.writeFile(path.join(output,'app/src/main/AndroidManifest.xml'),'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><uses-feature android:name="android.hardware.touchscreen" android:required="false"/>'+(tv?'<uses-feature android:name="android.software.leanback" android:required="true"/>':'')+'<application android:label="河豚基础包" android:theme="@android:style/Theme.Material.NoActionBar" android:usesCleartextTraffic="false" android:allowBackup="false"><activity android:name="com.hetun.client.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/>'+(tv?'<category android:name="android.intent.category.LEANBACK_LAUNCHER"/>':'')+'</intent-filter></activity></application></manifest>');
+ await fs.writeFile(path.join(output,'local.properties'),'sdk.dir='+tools.androidHome.replaceAll('\\','/')+'\n');
+ await run(path.join(tools.javaHome,'bin/java.exe'),['-cp',path.join(tools.gradleHome,'lib/*'),'org.gradle.launcher.GradleMain',':app:assembleRelease','--offline','--no-daemon'],{cwd:output,env:{JAVA_HOME:tools.javaHome,ANDROID_HOME:tools.androidHome,ANDROID_SDK_ROOT:tools.androidHome,GRADLE_USER_HOME:tools.gradleUserHome},timeout:900000,log:line=>process.stdout.write(line+'\n')});
+ const apk=path.join(output,'app/build/outputs/apk/release/app-release-unsigned.apk');require('../core/base-apk.cjs').parseBase(await fs.readFile(apk));return apk;
+}
+if(require.main===module){const file=process.argv[2];if(!file)throw Error('用法：node scripts/create-base.cjs 开发配置.json');fs.readFile(file,'utf8').then(JSON.parse).then(createBase).then(apk=>console.log('基础 APK：'+apk)).catch(e=>{console.error(e.message);process.exitCode=1;});}
+module.exports={createBase};

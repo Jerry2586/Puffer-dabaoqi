@@ -2,6 +2,7 @@
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {MAX,linkRoot,validId,atomic,readPeer}=require('./local-link.cjs');
 const {parseTheme,installTheme}=require('./themes.cjs');
+const {parseBase}=require('./base-apk.cjs');
 class ThemeReceiver{
  constructor(store,notify,{root=linkRoot(),paused=()=>false}={}){this.store=store;this.notify=notify;this.root=root;this.paused=paused;this.running=null;this.error='';this.peer=null;this.connectionSnapshot='';this.catalogCount=0;}
  status(){return {enabled:true,root:this.root,last:this.store.state.localLink?.last||null,error:this.error,connected:!!this.peer,peerError:this.peer?.syncError||'',catalogCount:this.catalogCount};}
@@ -27,8 +28,14 @@ class ThemeReceiver{
   for(const theme of this.store.state.themes)if(theme.origin==='local-catalog'&&!keys.has(theme.key))theme.catalogActive=false;
   await this.store.commit();this.catalogCount=keys.size;this.catalogRevision=revision;this.notify?.({type:'local-catalog',count:keys.size});
  }
+ async publishCapabilities(){
+  const app=this.store.state.apps.find(a=>a.id===this.store.state.selectedApp),device=app?.selectedDevice,os=app?.selectedOS;
+  const data={protocol:'hetun-local-capabilities',version:1,updatedAt:new Date().toISOString(),app:app?{id:app.id,name:app.name,device,os}:null,base:null,baseDigest:'',error:''};
+  try{if(!app)throw Error('打包器尚未选择应用');if(os!=='android')throw Error('当前平台尚未接入基础安装包重打包');const id=app.profiles[device][os].baseId,record=this.store.state.bases?.find(b=>b.id===id);if(!record)throw Error('打包器尚未选择基础 APK');const stat=await fs.stat(record.file),key=[record.id,record.digest,stat.size,stat.mtimeMs].join(':');if(this.baseSnapshot?.key!==key){const bytes=await fs.readFile(record.file),parsed=parseBase(bytes);if(parsed.digest!==record.digest)throw Error('基础 APK 已被修改，请重新导入');this.baseSnapshot={key,descriptor:parsed.descriptor,digest:parsed.digest};}data.base=this.baseSnapshot.descriptor;data.baseDigest=this.baseSnapshot.digest;}catch(e){data.error=e.message;}
+  await atomic(path.join(this.root,'packer-capabilities.json'),data);
+ }
  async consume(){
-  await atomic(path.join(this.root,'packer.json'),{protocol:1,updatedAt:new Date().toISOString()});this.peer=await readPeer('theme-center',this.root);if(this.paused()){this.notifyConnection();return;}
+  await this.publishCapabilities();await atomic(path.join(this.root,'packer.json'),{protocol:1,updatedAt:new Date().toISOString()});this.peer=await readPeer('theme-center',this.root);if(this.paused()){this.notifyConnection();return;}
   try{await this.catalog();this.error='';}catch(e){this.error='本机主题库：'+e.message;}
   this.store.state.localLink||={seen:[],last:null};const link=this.store.state.localLink;
   const names=(await fs.readdir(path.join(this.root,'inbox'))).filter(n=>/^[a-f0-9-]{36}\.json$/.test(n));

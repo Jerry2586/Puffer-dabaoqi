@@ -33,7 +33,8 @@ class MainActivity : Activity() {
   title = config.getString("name")
   root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(20, 16, 20, 12); setBackgroundColor(color("background", Color.BLACK)) }
   setContentView(root)
-  val title = TextView(this).apply { text = config.getString("name"); textSize = 26f; setTextColor(accent) }; root.addView(title)
+  val title = TextView(this).apply { text = theme.optJSONObject("brand")?.optString("name", config.getString("name")) ?: config.getString("name"); textSize = 26f; setTextColor(accent) }; root.addView(title)
+  theme.optJSONObject("brand")?.optString("tagline")?.takeIf { it.isNotBlank() }?.let { tagline -> root.addView(TextView(this).apply { text = tagline; setTextColor(this@MainActivity.foreground) }) }
   val scroll = ScrollView(this); body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }; scroll.addView(body)
   root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
   val nav = LinearLayout(this); val items = theme.optJSONArray("navigation") ?: JSONArray()
@@ -43,7 +44,7 @@ class MainActivity : Activity() {
  private fun text(value: String, size: Float = 17f) { body.addView(TextView(this).apply { text = value; textSize = size; setTextColor(this@MainActivity.foreground); setPadding(4, 10, 4, 10) }) }
  private fun button(label: String, click: () -> Unit): Button = Button(this).apply { text = label; isFocusable = true; setOnClickListener { click() } }
  private fun request(route: String, payload: JSONObject? = null): JSONObject {
-  val base = config.optString("apiBase"); require(base.isNotBlank()) { "尚未配置影视后台，当前为离线主题预览。" }
+  val base = config.optString("apiBase"); require(base.isNotBlank()) { "尚未配置影视后台，请在打包器填写 HTTPS 地址。" }
   val target = URL(base + route); require(target.protocol == "https") { "影视接口仅支持 HTTPS" }
   val connection = target.openConnection() as HttpURLConnection
   connection.connectTimeout = 12000; connection.readTimeout = 20000; connection.instanceFollowRedirects = false
@@ -68,7 +69,7 @@ class MainActivity : Activity() {
   row.addView(search, LinearLayout.LayoutParams(0, -2, 1f)); row.addView(button("搜索") { body.removeAllViews(); catalog("/api/catalog?page=1&keyword=" + Uri.encode(search.text.toString())) }); body.addView(row)
   val categories = theme.optJSONArray("categories") ?: JSONArray(); val horizontal = HorizontalScrollView(this); val categoryRow = LinearLayout(this)
   for (i in 0 until categories.length()) { val c = categories.getJSONObject(i); if (c.optBoolean("enabled", true)) categoryRow.addView(button(c.optString("label")) { showPage("category", c.optString("categoryId")) }) }; horizontal.addView(categoryRow); body.addView(horizontal)
-  if (config.optString("apiBase").isBlank()) text("离线主题预览 · 在打包器填写 HTTPS 影视中心后加载影片")
+  if (config.optString("apiBase").isBlank()) text("尚未配置影视中心 · 在打包器填写 HTTPS 地址后加载影片")
   val sections = theme.optJSONArray("sections") ?: JSONArray()
   if (page != "home") { text(if (page == "ranking") "排行榜" else "影片", 23f); catalog("/api/catalog?page=1&category=" + Uri.encode(category)); return }
   for (i in 0 until sections.length()) { val s = sections.getJSONObject(i); if (!s.optBoolean("enabled", true) || s.optString("page", "home") != "home") continue
