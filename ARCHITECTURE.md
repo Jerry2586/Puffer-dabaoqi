@@ -1,27 +1,13 @@
-# 河豚打包器
+# 河豚原生打包器架构
 
-独立 Electron 桌面工程。main/preload/renderer 分离，渲染器无 Node 权限；IPC 使用固定方法、入参校验。
+Electron 仅承载打包工作台。main/preload/renderer 分离，渲染器无 Node 权限；固定 IPC 方法校验来源。客户端分别由 Kotlin Android、SwiftUI iOS、C# WPF Windows 实现，不依赖 uni-app 页面或 DCloud SDK。
 
-## 目录边界
-本目录只放源码、工程配置和项目文档。公共开发依赖位于 UniAppTools/projects/hetun-packer/development；应用数据、签名、临时构建、输出均在用户选择的外部工作目录。客户端源码构建前复制到隔离目录，绝不在原项目执行安装、修改 manifest 或生成产物。
+core/native-project.cjs 将选定设备的主题、runtime.json 与用户导入的原生源码复制到独立构建目录。未导入源码时拒绝构建。自有工程必须包含 hetun-native.json v1 和匹配平台固定入口，不允许自定义构建命令。源目录禁止符号链接，输入输出不允许重叠。导出工程不携带 JKS 密码、AppKey 或 Apple 节点令牌。
 
-## 模型
-应用档案包含品牌、源工程和后台地址；mobile/tablet/tv/desktop 四端分别保存配置，前三端 android/ios 分别保存签名和版本身份，desktop.windows 独立保存桌面身份。主题是 hetun-skeleton v2 数据包，禁止执行主题代码。未安装当前端主题则禁用该端资源构建和安装包构建。
+core/engine.cjs 区分源码导出与安装包构建。Android 使用本地 Gradle --offline，随后 zipalign、apksigner 并核验包名、版本和证书指纹。Windows 用无源 NuGet 配置运行 dotnet publish，输出依赖 .NET Desktop Runtime 的单文件 EXE。iOS 将原生工程发送给自有 Mac agent v2，以固定 Xcode 工程执行 Archive，验证身份后返回 IPA 与摘要。当前 Windows 环境未验证 Xcode 编译。
 
-## 构建
-支持独立资源导出和最终安装包两个任务类型，不混淆成功状态。资源通过自己的 uni-app 工程编译；最终 Android 需要自有离线原生 Gradle 工程、DCloud AppID/AppKey 和签名。以 hetun-base.json 作为声明式适配描述，产出APK后校验包名、版本、签名。iOS 构建通过自有 Mac agent 的令牌接口执行 xcodebuild（接口/代理源码随工程提供）；未连接或缺少自有Xcode工程时明确阻塞。
+主题采用 hetun-skeleton v2 数据协议，不执行主题代码。原生渲染仅覆盖已声明的基础能力，具体 limitations 写入 hetun-native.json。后台统一为 HTTPS 网关，禁止配置中夹带账号参数；登录 token 仅留在客户端内存。CMS、会员和播放功能仍需后端实际联调。
 
-## 授权
-源码提供云端Ed25519签名租约接入。构建前要求packer授权并绑定当前应用后台域名，Key由系统加密保存；配置可信公钥，不接收健康接口作为授权成功证据。云端中心列出授权可用的已发布源码，可下载到独立空项目文件夹、提交真实构建、下载并核验SHA-256产物。影视中心与主题的授权由对应后端独立校验。云授权和云构建尚未完成独立联调与部署，本次上传不作为正式功能验收。
+R007 本机交接保留：hetun-local-theme v1 原子文件队列、摘要校验、去重、回执、按设备绑定；构建期间暂停自动接收。浏览器预览复用 Electron Store，限制 loopback Host、Origin、会话和方法；构建与签名通过桌面入口执行。
 
-## 交付
-软件本身为Windows桌面可执行程序。客户端APK/IPA需要真实AppID、AppKey、签名与匹配的原生工程，平台原生环境缺失时无法生成可安装APK/IPA；资源导出仍需客户端编译环境、匹配主题、后台与有效打包授权。
-
-## 电脑版运行与构建
-客户端 H5 副本只保留 index/detail 路由，通过 Electron 桌面容器运行。loopback 服务校验 Host 和 Origin，静态文件限制在 www，业务 API 代理到构建时固定后台，禁止管理 API。包名隔离用户数据。公共 Electron 依赖、独立构建副本和 EXE 均在源工程之外。
-
-## 软件更新
-core/updates.cjs 管理持久缓存、仓库提交和稳定 Release 状态。更新偏好写入串行队列；可信安装资产需要固定仓库 URL、精确命名、版本、大小与 SHA-256，执行前重验。main IPC 限定下载/安装方法，构建活动中不能安装。Git 提交提示不等同于可安装软件版本。
-
-## Windows 安装生命周期
-打包器自身提供 NSIS 正式安装包与独立便携版，appId 固定 com.hetun.packer。安装注册系统卸载项并创建启动、卸载快捷方式；卸载不删除外部工作根。软件内卸载使用当前安装目录的固定卸载程序，构建活动时拒绝执行。单实例锁避免多个窗口同时写入同一工作根。Windows 构建同时生成成品哈希与源码版本清单。
+本地入口禁用授权、云构建和在线更新。历史 desktop、native-adapter、updates 模块仅为旧档案兼容保留，不被新构建入口调用。公共环境和工作根在源码之外，正式打包器发行另行验收。

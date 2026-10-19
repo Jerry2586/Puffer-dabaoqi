@@ -2,11 +2,7 @@
   "token": "REPLACE_WITH_RANDOM_TOKEN_AT_LEAST_24_CHARACTERS",
   "host": "127.0.0.1",
   "port": 8799,
-  "source": "/Users/yourname/Projects/HetunNativeIOS",
   "workRoot": "/Users/yourname/Library/Application Support/HetunMacAgent",
-  "project": "Hetun.xcworkspace",
-  "scheme": "Hetun",
-  "assetsDir": "Hetun/Pandora/apps/{appid}/www",
   "exportOptions": "/Users/yourname/BuildKeys/exportOptions.plist",
   "devices": [
     "mobile",

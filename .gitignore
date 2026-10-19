@@ -24,3 +24,4 @@ agent-config.json
 build-info.json
 Thumbs.db
 .DS_Store
+/.codex/
