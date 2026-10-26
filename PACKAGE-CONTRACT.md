@@ -25,21 +25,29 @@ assets/hetun-base.json 必须声明：format=hetun-base-apk、version=1、contra
 
 必须用自己的 JKS 对最终 APK 签名。升级已安装应用时需保持相同包名与签名证书；更换签名通常不能覆盖原安装。
 
-## 两软件本机通信
+## 两软件独立与手动主题交接
 
-默认共享目录：%LOCALAPPDATA%/Programs/UniAppTools/local-link，可用 HETUN_LOCAL_LINK_ROOT 为开发测试显式隔离。
+主题中心和打包器分别启动、分别保存数据。主题中心导出 hetun-skeleton v2 主题 ZIP，用户在打包器手动导入后按设备选择；不扫描共享目录、不自动接收主题、不发送心跳或基础包能力。
 
-- theme-center.json、packer.json：protocol=1，updatedAt；超过 8 秒失效。
-- packer-capabilities.json：hetun-local-capabilities v1，updatedAt，app 显示信息，base 协议，baseDigest，error。仅有效心跳和新鲜能力声明可参与检查。
-- inbox/<UUID>.json：hetun-local-theme v1，主题 ZIP 的 Base64、SHA-256、名称、时间与编号。
-- receipts/<UUID>.json：真实接收结果；排队、接收和兼容状态独立。
+打包器仅允许本机安装记录 origin=import 的主题参与选择和构建。历史 local-catalog、local-link 等自动同步记录不显示、不用于构建；旧记录及文件保留，用户可手动重新导入为独立副本。状态视图、档案保存、构建检查和实际出包入口统一执行此规则。
 
-主题中心本机服务 GET /api/admin/local-packer 返回连接和基础包能力；GET 同路径加 id 查询回执。POST {template,action:"check"} 导出已保存主题并返回 report、baseDigest、app，不产生交接队列。POST {template} 真实导出并排队，返回回执和 compatibility。检查失败不删除或修改主题。
-
-以上 HTTP 接口要求本机 HttpOnly 会话；POST 必须同源 Origin、X-Hetun-Client: studio 和 application/json。不接受云端匿名调用。端口由本机服务启动后分配，不写死端口。
+旧 theme-center.json、packer.json、packer-capabilities.json、inbox 和 receipts 协议停止用于运行流程，历史目录不自动删除。打包器不暴露 localReceive、localLink、themeSync；主题中心旧 /api/admin/local-packer 接口返回 HTTP 410。源代码中保留的历史互连模块不代表功能仍启用。
 
 ## 验收范围
 
 Android 链路验证包括：真实基础 APK 编译，脱离源码和 Gradle 的主题注入、对齐、JKS 签名、apksigner 校验、aapt 身份检查、原生文件与资产完整性检查。自动化测试不替代真机界面、遥控器、真实 CMS 和播放验证。
 
 当前 Kotlin 核心渲染器能力小于主题编辑器完整功能集，完整默认主题会报告缺失字段，不能标为全部适配。iOS/Windows 共享数据协议可以复用，但二进制重打包尚未实现，不允许据目标列表显示为可用。
+
+
+## 本机 CMS 发现与服务域名切换
+
+运营端安装完成后和首次启动时，在尚未配置 CMS 的情况下扫描同服务器 /www/wwwroot 下的苹果 CMS 公共站点配置，并实际请求采集分类及影片接口。只发现一个可用站点才自动连接；多个站点由管理员选择。不会创建 CMS、执行 PHP 或读取数据库密码。异机 CMS 仍可手填地址；会员和支付适配需要单独验证。
+
+后台服务域名设置保存一个 HTTPS 主域名和最多四个备用域名；域名、TLS 和服务器反向代理需事先可访问。GET /api/service-directory 返回 payload、signature、publicKey，均为 Base64，RSA-SHA256 签名。payload 的 contract 为 hetun-service-directory-v1，含公钥 SHA256 keyId、独立递增 revision、addresses、recoveryUrls、issuedAt。普通业务发布不会增加地址目录版本。
+
+打包器检测后台时验证目录签名，再将固定公钥、地址和版本写入 runtime.serviceDirectory。新版 Kotlin 底包声明 service-routing-v1，运行时校验目录后再向服务发送登录令牌；旧底包不能带着新目录出包。GET 网络故障可换地址，POST 不自动重发。签名有效不代表证书、DNS 或服务器已部署。
+
+至少保留一个可访问备用域名，或预先配置独立 HTTPS 恢复文件地址，并在每次地址变更后将后台导出的签名目录同步到该地址。所有已知入口同时失联且没有独立恢复入口时，离线客户端无法接收新域名，需更新安装包。换服务器须迁移业务数据以及 dataDir/service-key.pem，保持服务身份。目录公开不含私钥；私钥不能放进 APK。主题中心继续完全离线，不承担域名配置和服务发现。
+
+本次原生客户端实现限 Android；iOS 和 Windows 的原生域名切换与二进制重打包未实现。

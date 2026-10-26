@@ -3,7 +3,7 @@
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 async function startPreview({root,invoke,port=0}){
  const token=crypto.randomBytes(32).toString('hex'),clients=new Set();let origin;
- const methods=['state','create','save','select','duplicate','remove','localReceive','localLink','environment','inspect','settings','checkBackend','cancel'];
+ const methods=['state','create','save','select','duplicate','remove','environment','inspect','settings','checkBackend','cancel'];
  const server=http.createServer(async(req,res)=>{try{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
   if(req.headers.host!==new URL(origin).host){res.writeHead(403);return res.end();}

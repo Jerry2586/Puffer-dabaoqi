@@ -1,15 +1,17 @@
 'use strict';
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {run}=require('./process.cjs');const {prepare,repack,verifyRepacked}=require('./base-apk.cjs');const {exists}=require('./services.cjs');const {runtime,copyTree}=require('./native-project.cjs');
+const {importedTheme}=require('./themes.cjs');
 class Engine {
  constructor(store,vault,notify){this.store=store;this.vault=vault;this.notify=notify;this.active=null;}
  async inspect(a,kind='installer'){
   if(!['resources','installer'].includes(kind))throw Error('构建类型无效。');const checks=[],add=(name,ok,detail)=>checks.push({name,ok:!!ok,detail});const d=a.selectedDevice,os=a.selectedOS,p=a.profiles[d][os],s=this.store.state,t=s.settings.tools;
   add('原生平台',['android','ios','windows'].includes(os)&&!(d==='tv'&&os!=='android'),({android:'Kotlin · Android 原生',ios:'SwiftUI · iPhone / iPad',windows:'C# WPF · Windows 原生'})[os]||'不支持');
   try{runtime(a);add('应用与统一接口',true,a.backend||'未配置影视后台，仅加载本机主题');}catch(e){add('应用与统一接口',false,e.message);}
-  const theme=s.themes.find(x=>x.key===a.profiles[d].themeId&&x.platform===d);add('本机主题',theme,theme?.name||'接收或导入对应设备主题');
+  const theme=importedTheme(s.themes,a.profiles[d].themeId,d);add('本机主题',theme,theme?.name||'请手动导入并选择对应设备的主题包');
   add('二次打包类型',kind==='installer','日常打包仅接受基础安装包与主题；源码构建属于独立开发流程');
   if(os==='android'){
+   if(a.backend)add('主备域名目录',!!a.serviceDirectory,a.serviceDirectory?'已验证后台身份及主备地址':'请先点击检测后台，导入签名服务地址后再打包');
    try{const prepared=await prepare(this.store,a);add('基础 APK 与主题协议',true,prepared.report.renderer+' · '+prepared.report.contract);}catch(e){add('基础 APK 与主题协议',false,e.message);}
    const btRoot=path.join(t.androidHome||'','build-tools');let bt='';try{const versions=(await fs.readdir(btRoot)).sort((a,b)=>b.localeCompare(a,undefined,{numeric:true}));bt=path.join(btRoot,versions[0]);}catch{}
    add('本机签名工具',!!bt&&await exists(path.join(bt,'zipalign.exe'))&&await exists(path.join(bt,'aapt.exe'))&&await exists(path.join(bt,'lib/apksigner.jar'))&&await exists(path.join(t.javaHome||'','bin/java.exe')),'JDK 与 Android Build Tools；二次打包无需 Gradle');

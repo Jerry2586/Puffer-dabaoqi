@@ -25,3 +25,8 @@ build-info.json
 Thumbs.db
 .DS_Store
 /.codex/
+
+# Android development machine files
+native/android/.gradle/
+native/android/.idea/
+native/android/local.properties
