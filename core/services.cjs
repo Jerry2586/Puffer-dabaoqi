@@ -4,16 +4,16 @@ async function jsonRequest(url,options={}){const res=await fetch(url,{...options
 function connectionBase(value){const u=new URL(httpUrl(value));if(u.pathname!=='/'&&u.pathname!=='/api/service-directory')throw Error('请粘贴运营端接入链接或纯域名，不要填写后台入口。');if(u.protocol!=='https:'&&!['127.0.0.1','[::1]','localhost'].includes(u.hostname))throw Error('正式服务必须使用 HTTPS；HTTP 仅供本机预览。');return u.origin;}
 async function backendCheck(value,device){
  const base=connectionBase(value);if(!DEVICES.includes(device))throw Error('设备类型无效。');
- const platform=device==='desktop'?'web':device;
+ const platform=device==='desktop'?'web':device,prefix='/api/v1/'+device;
  const checks=[];let directory=null,cmsConfigured=false;
  async function check(id,name,path,validate,content=false){const start=Date.now();try{const data=await jsonRequest(base+path,{headers:{'X-Hetun-Platform':platform}});validate(data);checks.push({id,name,path,ok:true,content,detail:content&&data.items.length===0?'接口可用，当前返回0条内容':'响应与协议校验通过',durationMs:Date.now()-start});return data;}catch(e){checks.push({id,name,path,ok:false,content,detail:e.name==='TimeoutError'?'请求超时（10 秒），请检查网络或运营端服务后重试。':e.message==='fetch failed'?'网络连接失败，请检查域名、证书或代理设置。':e.message,durationMs:Date.now()-start});return null;}}
  const systems=['mobile','tablet'].includes(device)?['android','ios']:[device==='desktop'?'web':'android'];
  await Promise.all([
  check('health','服务身份','/api/health',h=>{if(h.status!=='ok'||h.service!=='hetun'||h.product!=='operations-center'||h.contract!=='hetun-operations-v1')throw Error('服务身份或运营协议不匹配。');cmsConfigured=h.cmsConfigured===true;}),
  check('directory','签名接入目录','/api/service-directory',d=>{require('./service-directory.cjs').verifiedDirectory(d,'',base);directory=d;}),
- ...systems.map(os=>check('bootstrap-'+os,'客户端配置 / '+os,'/api/client/bootstrap?platform='+platform+'&os='+os+'&contract=hetun-operations-v1',d=>{if(d.contract!=='hetun-operations-v1'||d.themeContract!=='hetun-runtime-v1'||d.platform!==platform||d.os!==os||!d.config||typeof d.config!=='object'||Array.isArray(d.config))throw Error('客户端配置协议不兼容。');})),
- check('categories','分类接口','/api/catalog/categories',d=>{if(!Array.isArray(d.items))throw Error('分类响应格式无效。');},true),
- check('catalog','影片列表接口','/api/catalog?page=1',d=>{if(!Array.isArray(d.items))throw Error('影片响应格式无效。');},true)
+ ...systems.map(os=>check('bootstrap-'+os,'客户端配置 / '+os,prefix+'/bootstrap?platform='+platform+'&os='+os+'&contract=hetun-operations-v1',d=>{if(d.schemaVersion!==1||!Number.isSafeInteger(d.version)||d.version<1||d.contract!=='hetun-operations-v1'||d.themeContract!=='hetun-runtime-v1'||d.platform!==platform||d.os!==os||!d.config||typeof d.config!=='object'||Array.isArray(d.config))throw Error('客户端配置协议不兼容。');})),
+ check('categories','分类接口',prefix+'/catalog/categories',d=>{if(!Array.isArray(d.items))throw Error('分类响应格式无效。');},true),
+ check('catalog','影片列表接口',prefix+'/catalog?page=1',d=>{if(!Array.isArray(d.items))throw Error('影片响应格式无效。');},true)
  ]);
  const connectionOK=checks.filter(c=>!c.content).every(c=>c.ok),contentOK=checks.filter(c=>c.content).every(c=>c.ok);
  return {base,checks,connectionOK,contentOK,ok:connectionOK&&contentOK,serviceDirectory:connectionOK?directory:null,routingError:checks.filter(c=>!c.content&&!c.ok).map(c=>c.name+'：'+c.detail).join('；'),online:checks.find(c=>c.id==='health').ok,cmsConfigured,published:null,themeError:'主题由用户在当前应用上传，不从运营端下载。',checkedAt:new Date().toISOString()};

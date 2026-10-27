@@ -3,6 +3,7 @@
 const applicationFiles=[
   "main.cjs",
   "preload.cjs",
+  "core/advanced-config.cjs",
   "core/android-manifest.cjs",
   "core/base-apk.cjs",
   "core/domain.cjs",

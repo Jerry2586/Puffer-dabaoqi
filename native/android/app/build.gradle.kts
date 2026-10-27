@@ -4,8 +4,10 @@ val runtime = JsonSlurper().parse(rootProject.file("runtime.json")) as Map<*, *>
 android {
  namespace = "com.hetun.client"
  compileSdk = 36
+ androidResources { noCompress += "mp4" }
  defaultConfig {
   applicationId = runtime["packageName"] as String
+  testInstrumentationRunner = "com.hetun.client.OperationsTestRunner"
   minSdk = 26
   targetSdk = 36
   versionCode = (runtime["versionCode"] as Number).toInt()

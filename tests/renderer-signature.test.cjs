@@ -24,7 +24,7 @@ test('签名创建成功但绑定保存失败时保留签名与待保存配置�
 });
 test('包名版本仅在第三模块显示一次，完整签名表单直接展开，工具设置不再重复提供签名',()=>{
  const f=setup();f.run('renderWorkbench()');const html=f.elements.get('#content').innerHTML,part=html.slice(html.indexOf('<span class="num">03</span>'),html.indexOf('<span class="num">04</span>'));
- assert.equal(html.split('com.example.unique').length-1,1);assert.equal(html.split('8.2.1').length-1,1);for(const label of ['应用名称','应用包名','版本名称','构建号','运营服务接入口','签名配置','生成新的 JKS','导入已有签名','密钥库密码','原私钥密码','网页唤起','可选统计'])assert.ok(part.includes(label),label);
+ assert.equal(html.split('com.example.unique').length-1,1);assert.equal(html.split('8.2.1').length-1,1);for(const label of ['应用名称','应用包名','版本名称','构建号','运营服务接入口','签名配置','生成新的 JKS','导入已有签名','密钥库密码','原私钥密码','网页唤起','渠道标识','统计服务'])assert.ok(part.includes(label),label);
  assert.doesNotMatch(html,/<details|settingsSignatures|管理签名|id="signatureMode"|data-action="advanced"/);f.run("state.settings={tools:{javaHome:'',androidHome:''}};settings('signatures')");const overlay=f.elements.get('#overlay').innerHTML;assert.doesNotMatch(overlay,/signatureMode|signatureAdd|data-tab="signatures"/);
 });
 
@@ -34,6 +34,6 @@ test('密码确认不一致时不调用签名接口，不保存档案',async()=>
 test('导入无需确认密码；生成使用相同私钥密码，表单不进入持久配置',async()=>{
  const f=setup();f.fields.find(el=>el.dataset.signature==='confirmPassword').value='';let data;f.api.signature=async input=>{data=structuredClone(input);return null;};await f.run("saveAppSignature('import')");assert.equal(data.mode,'import');f.fields.find(el=>el.dataset.signature==='confirmPassword').value='test-only-password';f.fields.find(el=>el.dataset.signature==='keyPassword').value='ignored-import-password';await f.run('saveAppSignature()');assert.equal(data.keyPassword,data.password);
 });
-test('生成已有签名后直接显示指纹、文件位置和备份动作；不支持能力不提供可写字段',()=>{
- const f=setup();f.run("state.signatures[0].file='C:/signatures/release.jks';state.signatures[0].fingerprint='AA:BB';renderWorkbench()");const html=f.elements.get('#content').innerHTML;assert.match(html,/备份 JKS/);assert.match(html,/打开签名目录/);assert.match(html,/AA:BB/);assert.doesNotMatch(html,/data-path="advanced\.(scheme|host|statisticsKey)"/);assert.match(html,/当前基础 APK 未接入/);assert.match(html,/id="buildChecks"/);
+test('签名显示指纹与备份动作，唤起可编辑且未实现统计不提供假输入',()=>{
+ const f=setup();f.run("state.signatures[0].file='C:/signatures/release.jks';state.signatures[0].fingerprint='AA:BB';renderWorkbench()");const html=f.elements.get('#content').innerHTML;assert.match(html,/备份 JKS/);assert.match(html,/打开签名目录/);assert.match(html,/AA:BB/);assert.match(html,/data-path="advanced\.scheme"/);assert.match(html,/data-path="advanced\.host"/);assert.doesNotMatch(html,/data-path="advanced\.(statisticsKey|privacyUrl)"/);assert.match(html,/当前底包未接入网页唤起/);assert.match(html,/id="buildChecks"/);
 });

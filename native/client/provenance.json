@@ -1,0 +1,123 @@
+{
+  "format": "hetun-client-source-snapshot-v1",
+  "source": "hetun-theme-center/shared-source",
+  "note": "Versioned source snapshot; no live theme-center access. Local changes reviewed in the same R027 batch.",
+  "files": [
+    {
+      "path": "src/components/AppExperience.vue",
+      "sha256": "7aac9a5d872a2a8f7cfb5e50817dd9d0d746f2a5df26034893486beee3511067"
+    },
+    {
+      "path": "src/domain/visual.ts",
+      "sha256": "ae915f25a1a568441031bb9c59133141e365611088a91d61fb575ed832413a53"
+    },
+    {
+      "path": "src/domain/visual-schema.json",
+      "sha256": "9e126f10c665097f1021a251d3f2e46961069a278a0b26824cc78d87817f1086"
+    },
+    {
+      "path": "src/domain/types.ts",
+      "sha256": "32967326216a52658a4936c9175025885d96e4628ffd65fc0dcb92eb822d6673"
+    },
+    {
+      "path": "src/components/MobileCatalog.vue",
+      "sha256": "1773fd10de6b969a9abdeca360094465989d6f533f4095d68cc6466ddf22abac"
+    },
+    {
+      "path": "src/components/FilmModule.vue",
+      "sha256": "ede939064d23913147ca75569040f2a80c1b80daf255f082b90b27f0595ddc98"
+    },
+    {
+      "path": "src/components/AppEmptyState.vue",
+      "sha256": "6edc4ca96dea30b43f53dfe2b69c9e806d7beb3a8470dc64d2ecd18dd3fc7d97"
+    },
+    {
+      "path": "src/components/AppIcon.vue",
+      "sha256": "f1918f9c52ef34183799149b0f0a582c761cb54dff4e8b52a37727685242c724"
+    },
+    {
+      "path": "src/domain/presentation.ts",
+      "sha256": "d992e3fc1b38b548525d6ba60178239ecc39e258a679cf07f9713cd385527ff9"
+    },
+    {
+      "path": "src/components/MobileShortDrama.vue",
+      "sha256": "4f26b4e2e990e5523e2cc9e934cfd577e17ee2463a57340c648f88254d32ee22"
+    },
+    {
+      "path": "src/services/library.ts",
+      "sha256": "bde948e00a652691df001e95381f2584c08957816677122b3270cab750bcf21f"
+    },
+    {
+      "path": "src/components/MobileEpisodeList.vue",
+      "sha256": "c6e5a409cb18675fd022d6822521737939127982aeb01ae10777e0989fbc9d88"
+    },
+    {
+      "path": "src/components/MobileTabBar.vue",
+      "sha256": "ec8436e8ae57c6ae6dc27472dcd9b163a620a965030400996e834e1fb4e7d95b"
+    },
+    {
+      "path": "src/components/ThemeCarousel.vue",
+      "sha256": "03504aea67d068272f3b52baf44045978852ca70e62482370b7e40a1990e0828"
+    },
+    {
+      "path": "src/components/MemberPanel.vue",
+      "sha256": "2f6d7e2f88dbead5b35496997f91b56c81d6f95aa76441f0fc7b1aa24d224cb8"
+    },
+    {
+      "path": "src/components/PufferMark.vue",
+      "sha256": "cd09cbfd7f62f39cb349dd06a19d34cafb231c2c55ad5dad6d44e847e9847fbc"
+    },
+    {
+      "path": "src/components/AdSpot.vue",
+      "sha256": "1a25bf65dc216e1a35ac428849b2a29a9689d4e47a7ecbe609ca862a04b0eead"
+    },
+    {
+      "path": "src/components/StartupScreen.vue",
+      "sha256": "fa138b24d4111029abf95a2fd590f5989f11d69a8a29e09055812f612aebaa5b"
+    },
+    {
+      "path": "src/components/AnnouncementBanner.vue",
+      "sha256": "8ab6100bc990fbf86458674d7ebd64fb35b5a65b5934e9392e0ac0fa0591bad0"
+    },
+    {
+      "path": "src/components/ClientPrompts.vue",
+      "sha256": "2bf584b53d136cb58e72ad1207750dc331da1572c604e0be7bfcb61da38e298a"
+    },
+    {
+      "path": "src/domain/client-notifications.ts",
+      "sha256": "ac61856f6f23ff198e16709c1315413492113f046a05cd3171bf5290d87382dc"
+    },
+    {
+      "path": "src/components/mobile-theme.css",
+      "sha256": "ff54fb159d6385101d87134f602c171d9869c9588453ae5bc1a30c358b8f0f01"
+    },
+    {
+      "path": "src/domain/default-theme.json",
+      "sha256": "851876425558fd7c43ed3de34e604e4f395be630b0ea9f54acbb7a8440e2818d"
+    },
+    {
+      "path": "src/domain/normalize-theme.ts",
+      "sha256": "db29ada84a2a4dddc4cab2f3281c77b2db7b36fc517d16ee14956c1d80215056"
+    },
+    {
+      "path": "src/services/client-runtime.ts",
+      "sha256": "2cb1eed97061a0d5fdef4bf26ade145238402d540a20ab3cf0f4157a0a3396c7"
+    },
+    {
+      "path": "src/App.vue",
+      "sha256": "4a4bad2b5d4c386303cf2b71fb9256afcdac5697afae2377644e9be9b316a316"
+    },
+    {
+      "path": "src/main.ts",
+      "sha256": "792200d10b797dc2c5a117f86be7e2ed909b98f998f6cba3cea9a1a52408e90c"
+    },
+    {
+      "path": "src/manifest.json",
+      "sha256": "fb284c93c97bf1b49d600201f1ff73d8f334bd8fec66515be6c2acb690a2c7c6"
+    },
+    {
+      "path": "src/env.d.ts",
+      "sha256": "6cffe84a6b162cf97d3a80dd4cc1999d2899f10e194fa052c743a704c63f9cd8"
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "appbar": {
+    "label": "应用栏",
+    "fields": {
+      "background": {
+        "label": "背景起色",
+        "default": "#111927",
+        "type": "color",
+        "token": "surface"
+      },
+      "end": {
+        "label": "背景止色",
+        "default": "#111927",
+        "type": "color",
+        "token": "surface"
+      },
+      "text": {
+        "label": "标题颜色",
+        "default": "#f5f7fb",
+        "type": "color",
+        "token": "text"
+      },
+      "size": {
+        "label": "标题字号",
+        "default": 18,
+        "type": "number",
+        "min": 12,
+        "max": 30
+      },
+      "height": {
+        "label": "应用栏高度",
+        "default": 56,
+        "type": "number",
+        "min": 40,
+        "max": 96
+      }
+    }
+  },
+  "navigation": {
+    "label": "底部导航",
+    "fields": {
+      "background": {
+        "label": "底栏背景",
+        "default": "#111927",
+        "type": "color",
+        "token": "surface"
+      },
+      "text": {
+        "label": "未选中文字",
+        "default": "#8995aa",
+        "type": "color",
+        "token": "muted"
+      },
+      "active": {
+        "label": "选中颜色",
+        "default": "#38c7db",
+        "type": "color",
+        "token": "accent"
+      },
+      "size": {
+        "label": "文字字号",
+        "default": 11,
+        "type": "number",
+        "min": 9,
+        "max": 20
+      },
+      "height": {
+        "label": "导航高度",
+        "default": 58,
+        "type": "number",
+        "min": 44,
+        "max": 90
+      },
+      "iconSize": {
+        "label": "导航图标尺寸",
+        "default": 23,
+        "type": "number",
+        "min": 16,
+        "max": 40
+      }
+    }
+  },
+  "cards": {
+    "label": "卡片与海报",
+    "fields": {
+      "background": {
+        "label": "卡片背景",
+        "default": "#151a25",
+        "type": "color",
+        "token": "surface"
+      },
+      "text": {
+        "label": "标题颜色",
+        "default": "#f5f7fb",
+        "type": "color",
+        "token": "text"
+      },
+      "muted": {
+        "label": "说明颜色",
+        "default": "#8b95a8",
+        "type": "color",
+        "token": "muted"
+      },
+      "size": {
+        "label": "标题字号",
+        "default": 14,
+        "type": "number",
+        "min": 10,
+        "max": 24
+      },
+      "radius": {
+        "label": "卡片圆角",
+        "default": 12,
+        "type": "number",
+        "min": 0,
+        "max": 36
+      },
+      "gap": {
+        "label": "卡片内边距",
+        "default": 16,
+        "type": "number",
+        "min": 4,
+        "max": 32
+      }
+    }
+  },
+  "player": {
+    "label": "播放器",
+    "fields": {
+      "background": {
+        "label": "播放器背景",
+        "default": "#05080e",
+        "type": "color"
+      },
+      "controls": {
+        "label": "控件颜色",
+        "default": "#ffffff",
+        "type": "color"
+      },
+      "progress": {
+        "label": "播放进度",
+        "default": "#38c7db",
+        "type": "color",
+        "token": "accent"
+      },
+      "buffer": {
+        "label": "缓冲进度",
+        "default": "#77849b",
+        "type": "color"
+      },
+      "track": {
+        "label": "进度底色",
+        "default": "#2a3445",
+        "type": "color"
+      },
+      "size": {
+        "label": "控件字号",
+        "default": 14,
+        "type": "number",
+        "min": 10,
+        "max": 24
+      },
+      "watermarkOpacity": {
+        "label": "水印透明度",
+        "default": 45,
+        "type": "number",
+        "min": 0,
+        "max": 100
+      }
+    }
+  },
+  "carousel": {
+    "label": "轮播细节",
+    "fields": {
+      "titleSize": {
+        "label": "轮播标题字号",
+        "default": 24,
+        "type": "number",
+        "min": 14,
+        "max": 40
+      },
+      "overlay": {
+        "label": "遮罩强度",
+        "default": 65,
+        "type": "number",
+        "min": 0,
+        "max": 100
+      },
+      "duration": {
+        "label": "切换时长（毫秒）",
+        "default": 550,
+        "type": "number",
+        "min": 150,
+        "max": 1200
+      },
+      "peek": {
+        "label": "两侧露边宽度",
+        "default": 24,
+        "type": "number",
+        "min": 0,
+        "max": 70
+      }
+    }
+  },
+  "dialog": {
+    "label": "弹窗",
+    "fields": {
+      "background": {
+        "label": "弹窗背景",
+        "default": "#1c2535",
+        "type": "color",
+        "token": "surface"
+      },
+      "text": {
+        "label": "弹窗文字",
+        "default": "#f5f7fb",
+        "type": "color",
+        "token": "text"
+      },
+      "radius": {
+        "label": "弹窗圆角",
+        "default": 20,
+        "type": "number",
+        "min": 0,
+        "max": 36
+      }
+    }
+  },
+  "input": {
+    "label": "输入框与按钮",
+    "fields": {
+      "background": {
+        "label": "输入框背景",
+        "default": "#202b3c",
+        "type": "color",
+        "token": "surface"
+      },
+      "text": {
+        "label": "输入文字",
+        "default": "#f5f7fb",
+        "type": "color",
+        "token": "text"
+      },
+      "radius": {
+        "label": "输入圆角",
+        "default": 12,
+        "type": "number",
+        "min": 0,
+        "max": 32
+      },
+      "height": {
+        "label": "输入高度",
+        "default": 48,
+        "type": "number",
+        "min": 36,
+        "max": 72
+      }
+    }
+  },
+  "empty": {
+    "label": "空态与加载",
+    "fields": {
+      "color": {
+        "label": "图形颜色",
+        "default": "#8b95a8",
+        "type": "color",
+        "token": "muted"
+      },
+      "size": {
+        "label": "图形尺寸",
+        "default": 48,
+        "type": "number",
+        "min": 24,
+        "max": 100
+      }
+    }
+  },
+  "directory": {
+    "label": "一级目录",
+    "fields": {
+      "background": {
+        "label": "目录背景",
+        "default": "#00000000",
+        "type": "color"
+      },
+      "text": {
+        "label": "未选中文字",
+        "default": "#8995aa",
+        "type": "color",
+        "token": "muted"
+      },
+      "active": {
+        "label": "选中文字",
+        "default": "#f5f7fb",
+        "type": "color",
+        "token": "text"
+      },
+      "size": {
+        "label": "文字字号",
+        "default": 13,
+        "type": "number",
+        "min": 10,
+        "max": 26
+      },
+      "activeSize": {
+        "label": "选中文字字号",
+        "default": 15,
+        "type": "number",
+        "min": 10,
+        "max": 30
+      },
+      "gap": {
+        "label": "目录间距",
+        "default": 14,
+        "type": "number",
+        "min": 4,
+        "max": 40
+      },
+      "height": {
+        "label": "目录高度",
+        "default": 40,
+        "type": "number",
+        "min": 30,
+        "max": 80
+      }
+    }
+  }
+}

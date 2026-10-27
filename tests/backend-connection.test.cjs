@@ -8,20 +8,20 @@ test('协议检测保留签名目录，内容失败不会伪报全部可用',asy
  global.fetch=async url=>{const u=new URL(url);paths.push(u.pathname);let body;
  if(u.pathname==='/api/health')body={status:'ok',service:'hetun',product:'operations-center',contract:'hetun-operations-v1',cmsConfigured:contentOK};
  else if(u.pathname==='/api/service-directory')body=tamper?{...directory,payload:Buffer.from('{}').toString('base64')}:directory;
- else if(u.pathname==='/api/client/bootstrap')body={contract:'hetun-operations-v1',themeContract:'hetun-runtime-v1',platform:u.searchParams.get('platform'),os:u.searchParams.get('os'),config:{}};
+ else if(/^\/api\/v1\/(mobile|tablet|tv|desktop)\/bootstrap$/.test(u.pathname))body={schemaVersion:1,version:1,contract:'hetun-operations-v1',themeContract:'hetun-runtime-v1',platform:u.searchParams.get('platform'),os:u.searchParams.get('os'),config:{}};
  else body=contentOK?{items:[]}:{error:'尚未配置内容源'};
- return new Response(JSON.stringify(body),{status:!contentOK&&u.pathname.startsWith('/api/catalog')?409:200});};
+ return new Response(JSON.stringify(body),{status:!contentOK&&/\/catalog(?:\/|$)/.test(u.pathname)?409:200});};
  try{let r=await backendCheck(base+'/api/service-directory','mobile');assert.equal(r.ok,true);assert.equal(r.checks.length,6);assert.deepEqual(r.serviceDirectory,directory);assert.equal(r.checks.filter(c=>c.content).length,2);assert.ok(!paths.includes('/api/theme'));contentOK=false;r=await backendCheck(base,'tv');assert.equal(r.connectionOK,true);assert.equal(r.contentOK,false);assert.equal(r.ok,false);assert.deepEqual(r.serviceDirectory,directory);tamper=true;r=await backendCheck(base,'tablet');assert.equal(r.connectionOK,false);assert.equal(r.serviceDirectory,null);}finally{global.fetch=original;}
 });
 
 test('各设备的所有探测请求携带对应平台，电视与网页不能误测手机内容',async()=>{
  const base='https://ops.example',directory=signed(base),original=global.fetch;let platform;const seen=[];
- global.fetch=async(url,options)=>{const u=new URL(url);seen.push(options.headers['X-Hetun-Platform']);let body;
+ global.fetch=async(url,options)=>{const u=new URL(url);seen.push({header:options.headers['X-Hetun-Platform'],path:u.pathname});let body;
  if(u.pathname==='/api/health')body={status:'ok',service:'hetun',product:'operations-center',contract:'hetun-operations-v1'};
  else if(u.pathname==='/api/service-directory')body=directory;
- else if(u.pathname==='/api/client/bootstrap')body={contract:'hetun-operations-v1',themeContract:'hetun-runtime-v1',platform,os:u.searchParams.get('os'),config:{}};
+ else if(/^\/api\/v1\/(mobile|tablet|tv|desktop)\/bootstrap$/.test(u.pathname))body={schemaVersion:1,version:1,contract:'hetun-operations-v1',themeContract:'hetun-runtime-v1',platform,os:u.searchParams.get('os'),config:{}};
  else body={items:[]};return new Response(JSON.stringify(body));};
- try{for(const device of ['mobile','tablet','tv','desktop']){platform=device==='desktop'?'web':device;seen.length=0;const result=await backendCheck(base,device);assert.equal(result.ok,true);assert.ok(seen.length>=5);assert.ok(seen.every(value=>value===platform));}}finally{global.fetch=original;}
+ try{for(const device of ['mobile','tablet','tv','desktop']){platform=device==='desktop'?'web':device;seen.length=0;const result=await backendCheck(base,device);assert.equal(result.ok,true);assert.ok(seen.length>=5);assert.ok(seen.every(value=>value.header===platform));assert.ok(seen.filter(value=>value.path.includes('/api/v1/')).every(value=>value.path.startsWith('/api/v1/'+device+'/')));assert.ok(!seen.some(value=>value.path.startsWith('/api/client/')));}}finally{global.fetch=original;}
 });
 
 test('过大响应在读取过程中中止，取消网络流',async()=>{
