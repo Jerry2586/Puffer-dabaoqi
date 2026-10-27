@@ -3,7 +3,7 @@
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 async function startPreview({root,invoke,port=0}){
  const token=crypto.randomBytes(32).toString('hex'),clients=new Set();let origin;
- const methods=['state','create','save','select','duplicate','remove','environment','inspect','settings','checkBackend','cancel'];
+ const methods=['state','create','save','select','duplicate','remove','environment','inspect','settings','checkBackend','cancel','themeImport','themeRemove'];
  const server=http.createServer(async(req,res)=>{try{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
   if(req.headers.host!==new URL(origin).host){res.writeHead(403);return res.end();}
@@ -13,12 +13,12 @@ async function startPreview({root,invoke,port=0}){
    if(url.pathname==='/events'&&req.method==='GET'){res.writeHead(200,{'Content-Type':'text/event-stream','Connection':'keep-alive'});res.write(': connected\n\n');clients.add(res);req.on('close',()=>clients.delete(res));return;}
    const name=url.pathname.slice(5);if(!methods.includes(name)){res.writeHead(404);return res.end(JSON.stringify({error:'请在桌面打包器中使用此功能。'}));}
    if(req.method!=='POST'||req.headers.origin!==origin||req.headers['x-hetun-client']!=='packer-preview'||!String(req.headers['content-type']||'').startsWith('application/json')){res.writeHead(403);return res.end();}
-   let body='',size=0;for await(const b of req){size+=b.length;if(size>200000)throw Error('请求过大');body+=b.toString();}const value=await invoke(name,JSON.parse(body||'{}'));res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({ok:true,value}));
+   const chunks=[];let size=0;const limit=name==='themeImport'?17*1024*1024:200000;for await(const b of req){size+=b.length;if(size>limit)throw Error('请求过大');chunks.push(b);}const input=JSON.parse(Buffer.concat(chunks).toString('utf8')||'{}');if(name==='themeImport'&&(!input||typeof input.content!=='string'||typeof input.fileName!=='string'||Object.keys(input).some(k=>!['appId','device','expectedKey','fileName','content'].includes(k))))throw Error('预览页面只接受上传的主题文件');const value=await invoke(name,input);res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({ok:true,value}));
   }
   if(req.method!=='GET'){res.writeHead(405);return res.end();}
   const headers={'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"};
   if(url.pathname==='/preview-bridge.js'){
-   const source='const previewMethods='+JSON.stringify(methods)+';window.packer=new Proxy({onEvent(callback){const events=new EventSource("/events");events.onmessage=e=>callback(JSON.parse(e.data));return()=>events.close();}},{get(target,name){if(name in target)return target[name];return async(input={})=>{if(!previewMethods.includes(name))throw Error("请在桌面打包器中使用此功能。");const response=await fetch("/api/"+name,{method:"POST",headers:{"Content-Type":"application/json","X-Hetun-Client":"packer-preview"},body:JSON.stringify(input)});const data=await response.json();if(!data.ok)throw Error(data.error||"本机请求失败");return data.value;};}});';
+   const source='const previewMethods='+JSON.stringify(methods)+';\n'+await fs.readFile(path.join(root,'renderer','preview-bridge.js'),'utf8');
    res.writeHead(200,{...headers,'Content-Type':'text/javascript; charset=utf-8'});return res.end(source);
   }
   const files={'/':'renderer/index.html','/app.js':'renderer/app.js','/style.css':'renderer/style.css','/assets/mark.svg':'assets/mark.svg'};const file=files[url.pathname];if(!file){res.writeHead(404);return res.end();}

@@ -7,3 +7,14 @@ test('有效拖拽锁定交互，失败后解锁且保持已有档案',async()=>
 test('点击取消会解锁，不把空结果覆盖到已有状态',async()=>{const f=setup();const before=vm.runInContext('JSON.stringify(state)',f.context),pending=vm.runInContext("action('baseImport',{})",f.context);assert.equal(f.calls.length,1);f.resolve(null);await pending;assert.equal(f.elements.get('.shell').inert,false);assert.equal(vm.runInContext('JSON.stringify(state)',f.context),before);});
 
 test('Windows 和 iOS 显示对应安装包，不能提示导入 Android APK',()=>{const f=setup();for(const [device,os,kind]of [['desktop','windows','EXE'],['mobile','ios','IPA'],['tablet','ios','IPA']]){const html=vm.runInContext(`renderBaseImport({selectedDevice:'${device}',selectedOS:'${os}'},null)`,f.context);assert.ok(html.includes(kind+' 安装包'));assert.match(html,/二次打包尚未实现/);assert.doesNotMatch(html,/切换至 Android|基础 APK|baseDropZone/);}});
+
+test('移除基础包只清除当前设备绑定，提交成功前保持当前界面数据，禁止重复移除',async()=>{
+ const f=setup();vm.runInContext("state.bases=[{id:'base'}];app().profiles={mobile:{themeId:'theme',android:{baseId:'base',packageName:'com.hetun.client',versionName:'2.0.0',versionCode:2,signatureId:'sign'}},tablet:{android:{baseId:'tablet-base'}}};dirty=true",f.context);
+ let commit,received,calls=0;f.context.window.packer.save=value=>{calls++;received=structuredClone(value);return new Promise(resolve=>commit=resolve);};
+ const pending=vm.runInContext('removeImportedBase()',f.context);assert.equal(received.profiles.mobile.android.baseId,'');assert.equal(received.profiles.mobile.android.signatureId,'sign');assert.equal(received.profiles.mobile.themeId,'theme');assert.equal(received.profiles.tablet.android.baseId,'tablet-base');assert.equal(vm.runInContext('profile().baseId',f.context),'base');assert.equal(f.elements.get('.shell').inert,true);
+ await vm.runInContext('removeImportedBase()',f.context);assert.equal(calls,1);const next=JSON.parse(vm.runInContext('JSON.stringify(state)',f.context));next.apps[0]=received;commit(next);await pending;assert.equal(vm.runInContext('profile().baseId',f.context),'');assert.equal(vm.runInContext('dirty',f.context),false);assert.equal(f.elements.get('.shell').inert,false);assert.equal(next.bases[0].id,'base');
+});
+test('基础包移除保存失败保留绑定与未保存配置，并解锁重试',async()=>{
+ const f=setup();vm.runInContext("app().profiles={mobile:{android:{baseId:'base'}}};dirty=true",f.context);const before=vm.runInContext('JSON.stringify(state)',f.context);f.context.window.packer.save=async()=>{throw Error('保存失败');};
+ await assert.rejects(vm.runInContext('removeImportedBase()',f.context),/保存失败/);assert.equal(vm.runInContext('JSON.stringify(state)',f.context),before);assert.equal(vm.runInContext('dirty',f.context),true);assert.equal(f.elements.get('.shell').inert,false);
+});

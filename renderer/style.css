@@ -17,3 +17,17 @@
 @media(prefers-reduced-motion:reduce){.base-drop{transition:none}}
 
 .platform-package-status{padding:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}.platform-package-status h3,.platform-package-status p{margin:0}.platform-package-status .base-import-icon{flex-shrink:0}
+
+/* A theme upload belongs to the current application and device. */
+.theme-upload-panel .base-drop{min-height:240px}.theme-upload-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}.theme-upload-panel .base-import-title{overflow-wrap:anywhere}
+
+/* Keep the four steps in reading order without a long, narrow side column. */
+.workspace{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace>.card:nth-child(n+3){grid-column:1/-1}.workspace .card{min-width:0}.workspace .pipeline{flex-wrap:wrap}.workspace .pipeline span{white-space:nowrap}
+@media(max-width:900px){.workspace{grid-template-columns:minmax(0,1fr)}}
+
+/* Imported files have a separate remove control; application details stay in step 03. */
+.upload-drop-wrap{position:relative}.upload-remove{position:absolute;top:10px;right:10px;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--panel);color:var(--muted);border:1px solid var(--line)}.upload-remove:hover:not(:disabled){color:var(--danger);background:var(--panel2)}.upload-remove svg{width:16px;height:16px}.upload-drop-wrap .base-drop{padding-left:44px;padding-right:44px}.app-signing-settings h3{margin:0 0 16px;font-size:14px;font-weight:600}.app-signing-settings .field{margin-bottom:0}.app-signing-settings .input-wrap select{flex:1;min-width:0}
+
+/* All packaging settings stay expanded in module 03. */
+.config-body{display:grid;gap:24px}.config-section+.config-section{border-top:1px solid var(--line);padding-top:24px}.config-heading{margin-bottom:16px}.config-heading h3{font-size:14px;margin:0 0 6px}.config-heading .help{margin:0}.signature-file{margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:9px;background:var(--bg);display:flex;gap:16px;align-items:flex-start;justify-content:space-between}.signature-file>div:first-child{min-width:0}.signature-file b{font-size:13px}.signature-file .help{margin:6px 0 0}.signature-file .inline-actions{flex-shrink:0;flex-wrap:wrap}.signature-create{margin-top:20px;padding:20px;border:1px solid var(--line);border-radius:9px}.signature-create h4{margin:0 0 16px;font-size:13px}.signature-create>.inline-actions{margin-top:16px;flex-wrap:wrap}.config-section input:disabled{cursor:not-allowed;opacity:.65}.config-section .notice .btn{margin-left:12px}#signatureResult:empty,#buildChecks:empty{display:none}#buildChecks{margin-top:18px}#signatureResult{margin-bottom:0}
+@media(max-width:1150px){.signature-file{flex-direction:column}.signature-create{padding:16px}}

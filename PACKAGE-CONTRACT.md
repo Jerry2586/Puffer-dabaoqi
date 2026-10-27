@@ -27,9 +27,9 @@ assets/hetun-base.json 必须声明：format=hetun-base-apk、version=1、contra
 
 ## 两软件独立与手动主题交接
 
-主题中心和打包器分别启动、分别保存数据。主题中心导出 hetun-skeleton v2 主题 ZIP，用户在打包器手动导入后按设备选择；不扫描共享目录、不自动接收主题、不发送心跳或基础包能力。
+主题中心和打包器分别启动、分别保存数据。主题中心导出 hetun-skeleton v2 主题 ZIP，用户在打包器当前应用和设备的面板中点击或拖拽上传后直接使用；不扫描共享目录、不自动接收主题、不发送心跳或基础包能力。
 
-打包器仅允许本机安装记录 origin=import 的主题参与选择和构建。历史 local-catalog、local-link 等自动同步记录不显示、不用于构建；旧记录及文件保留，用户可手动重新导入为独立副本。状态视图、档案保存、构建检查和实际出包入口统一执行此规则。
+打包器只允许 origin=import 且 appId 和 platform 与当前应用、设备一致的上传记录参与构建。上传 ZIP/JSON 最大 12MB，支持替换和移除，无全局主题选择或自动关联。普通保存不能修改主题引用，复制应用与档案交接不继承主题。历史无归属手动记录以及 local-catalog、local-link 等自动同步记录不显示、不用于构建；旧记录及文件保留，用户需重新上传为独立副本。状态视图、档案保存、构建检查和实际出包入口统一执行此规则。
 
 旧 theme-center.json、packer.json、packer-capabilities.json、inbox 和 receipts 协议停止用于运行流程，历史目录不自动删除。打包器不暴露 localReceive、localLink、themeSync；主题中心旧 /api/admin/local-packer 接口返回 HTTP 410。源代码中保留的历史互连模块不代表功能仍启用。
 

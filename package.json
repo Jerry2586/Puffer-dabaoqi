@@ -1,7 +1,7 @@
 {
   "name": "hetun-packer",
   "productName": "河豚打包器",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "河豚客户端本地打包工作台",
   "author": "河豚",
   "private": true,
