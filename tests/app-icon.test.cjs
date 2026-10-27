@@ -1,0 +1,6 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path');
+const {validatePng,importIcon,readIcon,ICON_PATH,iconPath}=require('../core/app-icon.cjs');
+const {png}=require('./fixtures/png.cjs');
+test('PNG 校验拒绝损坏、截断、非方形与超大解压内容',()=>{assert.deepEqual(validatePng(png()),png());const bad=Buffer.from(png());bad[48]^=1;for(const b of [bad,png().subarray(0,40),png(120,2,3),Buffer.concat([png(),Buffer.from('extra')])])assert.throws(()=>validatePng(b),/有效 PNG/);assert.equal(iconPath({}), '');assert.equal(iconPath({appIcon:ICON_PATH}),ICON_PATH);assert.throws(()=>iconPath({appIcon:'classes.dex'}),/声明无效/);});
+test('图标文件内容导入、取消与目录边界，不读取浏览器路径',async t=>{const root=await fs.mkdtemp(path.join(os.tmpdir(),'hetun-icon-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));await fs.mkdir(path.join(root,'icons'));assert.equal(await importIcon(root,{},async()=>''),null);const image=png(),uploaded=await importIcon(root,{content:image.toString('base64')},()=>{throw Error('不能打开文件对话框');});assert.deepEqual(await readIcon(root,uploaded.file),image);assert.ok(uploaded.data.startsWith('data:image/png;base64,'));await assert.rejects(importIcon(root,{content:'!!!!'},()=>{}),/上传内容/);await assert.rejects(readIcon(root,path.join(root,'outside.png')),/重新上传/);});

@@ -12,3 +12,6 @@ test('预览上传只接收当前应用文件内容，不允许服务器本地�
  const bridge=await (await fetch(preview.url+'/preview-bridge.js')).text();assert.match(bridge,/themeImportFile:uploadThemeFile/);assert.match(bridge,/input.accept='.zip,.json'/);
  }finally{preview.stop();}
 });
+
+
+test('浏览器 Logo 上传仅接收内容并拒绝本地路径',async()=>{const calls=[],preview=await startPreview({root:path.join(__dirname,'..'),invoke:async(name,input)=>{calls.push({name,input});return {file:'controlled.png',data:'data:image/png;base64,'};}});try{const page=await fetch(preview.url),cookie=page.headers.get('set-cookie').split(';')[0],headers={cookie,Origin:preview.url,'Content-Type':'application/json','X-Hetun-Client':'packer-preview'};const post=input=>fetch(preview.url+'/api/icon',{method:'POST',headers,body:JSON.stringify(input)});assert.equal((await post({filePath:'C:/secret.png'})).status,400);assert.equal((await post({content:'e30=',filePath:'C:/secret.png'})).status,400);assert.equal(calls.length,0);assert.equal((await (await post({content:'e30='})).json()).ok,true);assert.deepEqual(calls,[{name:'icon',input:{content:'e30='}}]);}finally{preview.stop();}});

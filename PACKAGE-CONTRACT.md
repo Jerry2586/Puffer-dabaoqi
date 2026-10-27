@@ -23,6 +23,10 @@ assets/hetun-base.json 必须声明：format=hetun-base-apk、version=1、contra
 
 成品保留基础包原生代码与资源，写入 assets/manifest.json、assets/assets/ 中的主题素材、assets/runtime.json。runtime 使用 hetun-runtime-v1，包含设备、平台、包名、名称、版本和 apiBase；不包含私钥、签名密码或用户登录令牌。
 
+可选 appIcon 字段只能声明 res/drawable/hetun_app_icon.png，资源必须真实存在，AndroidManifest.xml 的应用图标引用由制作底包时固定。打包器只允许替换该声明的 PNG；无声明的历史底包仍可按原流程打包，但请求自定义图标时拒绝，提示升级基础包。图标为不超过 5MB、2048×2048 的正方形 8 位非交错 PNG，上传内容经结构、校验和及解压长度验证。
+
+二次打包保留其余原生资源，证明文件将声明图标单独列为 mutable，并在签名后验证预期摘要与完整文件集合；移除自定义图标时恢复底包资源。底包导入、归档和变更校验继续执行，不能用 appIcon 声明放开任意路径。
+
 必须用自己的 JKS 对最终 APK 签名。升级已安装应用时需保持相同包名与签名证书；更换签名通常不能覆盖原安装。
 
 ## 两软件独立与手动主题交接
@@ -37,7 +41,7 @@ assets/hetun-base.json 必须声明：format=hetun-base-apk、version=1、contra
 
 Android 链路验证包括：真实基础 APK 编译，脱离源码和 Gradle 的主题注入、对齐、JKS 签名、apksigner 校验、aapt 身份检查、原生文件与资产完整性检查。自动化测试不替代真机界面、遥控器、真实 CMS 和播放验证。
 
-当前 Kotlin 核心渲染器能力小于主题编辑器完整功能集，完整默认主题会报告缺失字段，不能标为全部适配。iOS/Windows 共享数据协议可以复用，但二进制重打包尚未实现，不允许据目标列表显示为可用。
+新版基础包使用完整 Vue 客户端快照和 Kotlin 宿主，按 native/android/theme-capabilities.json 声明实际支持字段；旧有限渲染器继续拒绝超出自身能力的主题。当前完整主题已通过兼容检查及签名出包，但不能由此推断所有生产业务和真机效果已验收。iOS/Windows 共享数据协议可以复用，二进制重打包尚未实现，不允许据目标列表显示为可用。
 
 
 ## 本机 CMS 发现与服务域名切换

@@ -21,7 +21,7 @@ test('打包器独立启动，隐藏旧同步主题和绑定，仅手动重导�
 
  assert.equal(ipc.has('packer:localReceive'),false);assert.equal(ipc.has('packer:localLink'),false);assert.equal(ipc.has('packer:themeSync'),false);
  const event={sender:window.webContents,senderFrame:window.webContents.mainFrame};
- let result=await ipc.get('packer:state')(event,{});assert.equal(result.ok,true);assert.equal(Object.hasOwn(result.value,'localLink'),false);assert.equal(Object.hasOwn(result.value,'themes'),false);assert.equal(result.value.apps[0].profiles.mobile.uploadedTheme,null);assert.equal(result.value.apps[0].profiles.mobile.themeId,'');
+ let result=await ipc.get('packer:state')(event,{});assert.equal(result.ok,true);assert.equal(result.value.selectedApp,'');assert.equal(result.value.apps.length,1);assert.equal(Object.hasOwn(result.value,'localLink'),false);assert.equal(Object.hasOwn(result.value,'themes'),false);assert.equal(result.value.apps[0].profiles.mobile.uploadedTheme,null);assert.equal(result.value.apps[0].profiles.mobile.themeId,'');
  const diskBefore=JSON.parse(await fs.readFile(seed.file,'utf8'));assert.equal(diskBefore.themes[0].key,retained.key);assert.equal(diskBefore.apps[0].profiles.mobile.themeId,retained.key);assert.ok((await fs.stat(path.join(root,'themes',retained.key,'theme.zip'))).size>0);
  const forged=structuredClone(result.value.apps[0]);forged.profiles.mobile.themeId=retained.key;result=await ipc.get('packer:save')(event,forged);assert.equal(result.ok,true);assert.equal(result.value.apps[0].profiles.mobile.themeId,'');
  result=await ipc.get('packer:themeImport')(event,{appId:app.id,device:'mobile',expectedKey:''});assert.equal(result.ok,true);assert.equal(Object.hasOwn(result.value,'themes'),false);const imported=result.value.apps[0].profiles.mobile.uploadedTheme;assert.equal(imported.name,'手动主题');assert.equal(imported.fileName,'manual-theme.json');assert.notEqual(imported.key,retained.key);assert.equal(result.value.apps[0].profiles.mobile.themeId,imported.key);
@@ -29,7 +29,7 @@ test('打包器独立启动，隐藏旧同步主题和绑定，仅手动重导�
  const diskAfter=JSON.parse(await fs.readFile(seed.file,'utf8'));assert.equal(diskAfter.themes.length,2);assert.equal(diskAfter.themes[0].origin,'local-catalog');assert.ok((await fs.stat(path.join(root,'themes',retained.key,'theme.zip'))).size>0);
  assert.deepEqual(await fs.readdir(shared),['catalog.json']);assert.equal(await fs.readFile(path.join(shared,'catalog.json'),'utf8'),'queued external catalog');
  const invalid=path.join(root,'invalid.png');await fs.writeFile(invalid,'not-a-png');incoming=invalid;await assert.rejects(exposed.icon(),/有效 PNG/);
- const icon=path.join(root,'valid.png'),png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jY1sAAAAASUVORK5CYII=','base64');await fs.writeFile(icon,png);incoming=icon;const uploaded=await exposed.icon();assert.deepEqual(await fs.readFile(uploaded.file),png);assert.match(uploaded.data,/^data:image\/png;base64,/);assert.equal(path.dirname(uploaded.file),path.join(root,'icons'));
+ const icon=path.join(root,'valid.png'),png=await fs.readFile(path.join(__dirname,'../assets/icon.png'));await fs.writeFile(icon,png);incoming=icon;const uploaded=await exposed.icon();assert.deepEqual(await fs.readFile(uploaded.file),png);assert.match(uploaded.data,/^data:image\/png;base64,/);assert.equal(path.dirname(uploaded.file),path.join(root,'icons'));
  await assert.rejects(ipc.get('packer:icon')({sender:{},senderFrame:{}},{}),/调用来源无效/);
  callbacks.get('before-quit')();
 });

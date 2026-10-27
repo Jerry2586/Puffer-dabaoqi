@@ -3,7 +3,7 @@
 const http=require('node:http'),fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 async function startPreview({root,invoke,port=0}){
  const token=crypto.randomBytes(32).toString('hex'),clients=new Set();let origin;
- const methods=['state','create','save','select','duplicate','remove','environment','inspect','settings','checkBackend','cancel','themeImport','themeRemove'];
+ const methods=['state','create','save','select','duplicate','remove','environment','inspect','settings','checkBackend','cancel','themeImport','themeRemove','icon'];
  const server=http.createServer(async(req,res)=>{try{
   res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
   if(req.headers.host!==new URL(origin).host){res.writeHead(403);return res.end();}
@@ -13,7 +13,7 @@ async function startPreview({root,invoke,port=0}){
    if(url.pathname==='/events'&&req.method==='GET'){res.writeHead(200,{'Content-Type':'text/event-stream','Connection':'keep-alive'});res.write(': connected\n\n');clients.add(res);req.on('close',()=>clients.delete(res));return;}
    const name=url.pathname.slice(5);if(!methods.includes(name)){res.writeHead(404);return res.end(JSON.stringify({error:'请在桌面打包器中使用此功能。'}));}
    if(req.method!=='POST'||req.headers.origin!==origin||req.headers['x-hetun-client']!=='packer-preview'||!String(req.headers['content-type']||'').startsWith('application/json')){res.writeHead(403);return res.end();}
-   const chunks=[];let size=0;const limit=name==='themeImport'?17*1024*1024:200000;for await(const b of req){size+=b.length;if(size>limit)throw Error('请求过大');chunks.push(b);}const input=JSON.parse(Buffer.concat(chunks).toString('utf8')||'{}');if(name==='themeImport'&&(!input||typeof input.content!=='string'||typeof input.fileName!=='string'||Object.keys(input).some(k=>!['appId','device','expectedKey','fileName','content'].includes(k))))throw Error('预览页面只接受上传的主题文件');const value=await invoke(name,input);res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({ok:true,value}));
+   const chunks=[];let size=0;const limit=name==='themeImport'?17*1024*1024:name==='icon'?7*1024*1024:200000;for await(const b of req){size+=b.length;if(size>limit)throw Error('请求过大');chunks.push(b);}const input=JSON.parse(Buffer.concat(chunks).toString('utf8')||'{}');if(name==='themeImport'&&(!input||typeof input.content!=='string'||typeof input.fileName!=='string'||Object.keys(input).some(k=>!['appId','device','expectedKey','fileName','content'].includes(k))))throw Error('预览页面只接受上传的主题文件');if(name==='icon'&&(!input||typeof input.content!=='string'||Object.keys(input).some(k=>k!=='content')))throw Error('预览页面只接受上传的图标内容');const value=await invoke(name,input);res.writeHead(200,{'Content-Type':'application/json'});return res.end(JSON.stringify({ok:true,value}));
   }
   if(req.method!=='GET'){res.writeHead(405);return res.end();}
   const headers={'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"};
