@@ -1,5 +1,5 @@
 'use strict';
-const fs=require('node:fs/promises'),path=require('node:path');const {copyTree}=require('../core/native-project.cjs');const {run}=require('../core/process.cjs');
+const fs=require('node:fs/promises'),path=require('node:path');const {copyTree}=require('./files.cjs');const {run}=require('../core/process.cjs');
 async function createBase({source,output,config,tools,capabilities}){
  if(!source||!output||!config||!capabilities)throw Error('需要原生源码、独立输出目录、应用配置与真实渲染能力声明');
  if(config.os!=='android'||!['mobile','tablet','tv'].includes(config.device))throw Error('仅支持 Android 基础包开发');

@@ -1,1 +1,0 @@
-const {contextBridge,ipcRenderer}=require('electron');const product=process.argv.find(x=>x.startsWith('--hetun-auth-product='))?.split('=')[1];contextBridge.exposeInMainWorld('authorization',{call:(action,input={})=>ipcRenderer.invoke('authorization:'+product,{action,input}),onStatus:fn=>ipcRenderer.on('authorization:status',()=>fn())});

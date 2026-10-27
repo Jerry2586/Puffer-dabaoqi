@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
-const {run}=require('./process.cjs');const {prepare,repack,verifyRepacked}=require('./base-apk.cjs');const {exists}=require('./services.cjs');const {runtime,copyTree}=require('./native-project.cjs');
+const {run}=require('./process.cjs');const {prepare,repack,verifyRepacked}=require('./base-apk.cjs');const {exists}=require('./services.cjs');const {runtime}=require('./runtime.cjs');
 const {importedTheme}=require('./themes.cjs');
 class Engine {
  constructor(store,vault,notify){this.store=store;this.vault=vault;this.notify=notify;this.active=null;}
@@ -36,4 +36,4 @@ async perform(a,j,signal){
  }catch(e){j.status=signal.aborted?'cancelled':'failed';j.error=e.message;j.stage=signal.aborted?'任务已取消':'构建失败';log(j.error);}finally{j.finishedAt=new Date().toISOString();this.active=null;await this.store.commit();this.emit(j);}
  }
 }
-module.exports={Engine,copyTree};
+module.exports={Engine};
