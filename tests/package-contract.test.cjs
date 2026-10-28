@@ -16,3 +16,11 @@ test('枚举字段拒绝数组冒充文字，包括旧底包未声明枚举时',
  assert.throws(()=>validateBase({...base,themeValues:{schemaVersion:[2.5]}}),/取值声明/);
  assert.equal(validateBase({...base,themeValues:{schemaVersion:[2]}}).themeValues.schemaVersion[0],2);
 });
+
+test('旧完整移动底包必须重建后才能打包新骨架',()=>{
+ const old={...base,capabilities:base.capabilities.filter(x=>x!=='mobile-experience-v1')};
+ const result=compatibility(old,manifest({schemaVersion:2}),'mobile');
+ assert.equal(result.ready,false);assert.match(result.errors.join('；'),/旧移动界面/);
+ assert.equal(compatibility(base,manifest({schemaVersion:2}),'mobile').ready,true);
+ assert.equal(compatibility({...old,renderer:'third-party'},manifest({schemaVersion:2}),'mobile').ready,true);
+});

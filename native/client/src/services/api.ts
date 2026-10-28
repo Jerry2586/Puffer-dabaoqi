@@ -23,4 +23,4 @@ export const memberApi={
  upgrade:(groupId:number,period:string)=>request<any>('/api/member/upgrade','POST',{groupId,period}),recharge:(price:number,platform:string)=>request<any>('/api/member/recharge','POST',{price,platform}),
  checkout:(orderId:number,code:string,payment:string,platform:string)=>request<any>('/api/member/checkout','POST',{orderId,code,payment,platform})
 };
-export function assetUrl(value:string){if(!value)return '';if(/^assets\/[a-f0-9]{64}\.(png|jpg|webp|svg|mp4)$/.test(value))return '/'+value;if(/^https:\/\/[^\s]+$/i.test(value))return value;return '';}
+export function assetUrl(value:string){if(!value)return '';if(/^assets\/[a-f0-9]{64}\.(png|jpg|webp|svg|mp4)$/.test(value))return 'https://appassets.androidplatform.net/'+value;if(/^https:\/\/[^\s]+$/i.test(value))return value;return '';}

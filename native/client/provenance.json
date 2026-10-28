@@ -1,11 +1,11 @@
 {
   "format": "hetun-client-source-snapshot-v1",
   "source": "hetun-theme-center/shared-source",
-  "note": "Versioned source snapshot; no live theme-center access. Local changes reviewed in the same R027 batch.",
+  "note": "Versioned source snapshot; no live theme-center access. R029 shares the actual mobile renderer between offline editor and Android client.",
   "files": [
     {
       "path": "src/components/AppExperience.vue",
-      "sha256": "7aac9a5d872a2a8f7cfb5e50817dd9d0d746f2a5df26034893486beee3511067"
+      "sha256": "771ea0a5b2df41dd715ea5847cc365c2c4e8bec54ed91a0c6d415da056426b13"
     },
     {
       "path": "src/domain/visual.ts",
@@ -118,6 +118,10 @@
     {
       "path": "src/env.d.ts",
       "sha256": "6cffe84a6b162cf97d3a80dd4cc1999d2899f10e194fa052c743a704c63f9cd8"
+    },
+    {
+      "path": "src/components/MobileExperience.vue",
+      "sha256": "140084c38223590de8931c92b91edf92c892ef860552805a4c8829b88d94fe05"
     }
   ]
 }
