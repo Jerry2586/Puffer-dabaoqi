@@ -1,7 +1,8 @@
 'use strict';
+const {seedLegacyTheme}=require('./fixtures/legacy-theme.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path');
 const {Store}=require('../core/store.cjs'),{redactedApp,normalizeApp,newApp}=require('../core/domain.cjs');
-const {importThemeForProfile,removeThemeForProfile,installTheme,importedTheme}=require('../core/themes.cjs');
+const {importThemeForProfile,removeThemeForProfile,importedTheme}=require('../core/themes.cjs');
 const manifest=(device='mobile',name='上传主题')=>({format:'hetun-skeleton',version:2,renderer:'hetun-v2',platform:device,id:'upload-theme',name,theme:{schemaVersion:2,brand:{name},sections:[],navigation:[]}});
 const input=(a,device='mobile',extra={})=>({appId:a.id,device,fileName:'主题.json',content:Buffer.from(JSON.stringify(manifest(device))).toString('base64'),...extra});
 async function fixture(t){const root=await fs.mkdtemp(path.join(os.tmpdir(),'hetun-theme-upload-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));const store=await new Store(root).init(),app=await store.create('上传应用');return {root,store,app};}
@@ -30,7 +31,7 @@ test('复制、档案导出与重导入不继承主题，伪造其它应用主�
  const fresh=newApp('重导入');assert.equal(normalizeApp({...archive,id:fresh.id},fresh).profiles.mobile.themeId,'');
 });
 test('旧手动记录保留但不自动使用，空面板重新上传不被历史引用阻止',async t=>{
- const {root,store,app}=await fixture(t),old=await installTheme(store,Buffer.from(JSON.stringify(manifest())),'.json');app.profiles.mobile.themeId=old.key;await store.commit();
+ const {root,store,app}=await fixture(t),old=await seedLegacyTheme(store,Buffer.from(JSON.stringify(manifest())),'.json');app.profiles.mobile.themeId=old.key;await store.commit();
  const current=await importThemeForProfile(store,input(app,'mobile',{expectedKey:''}));assert.notEqual(current.key,old.key);assert.equal(app.profiles.mobile.themeId,current.key);
  assert.equal(store.state.themes.length,2);assert.ok((await fs.stat(path.join(root,'themes',old.key,'theme.zip'))).size>0);
 });

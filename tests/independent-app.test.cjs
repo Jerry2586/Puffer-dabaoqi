@@ -1,11 +1,12 @@
 'use strict';
+const {seedLegacyTheme}=require('./fixtures/legacy-theme.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path'),vm=require('node:vm');
-const {createRequire}=require('node:module'),{Store}=require('../core/store.cjs'),{installTheme}=require('../core/themes.cjs');
+const {createRequire}=require('node:module'),{Store}=require('../core/store.cjs');
 test('打包器独立启动，隐藏旧同步主题和绑定，仅手动重导入后可用',async t=>{
  const root=await fs.mkdtemp(path.join(os.tmpdir(),'hetun-independent-packer-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
  const seed=await new Store(root).init(),app=await seed.create('保留应用');
  const manifest={format:'hetun-skeleton',version:2,renderer:'hetun-v2',platform:'mobile',id:'retained-theme',name:'已有主题',theme:{schemaVersion:2,brand:{name:'已有主题'},sections:[],navigation:[]}};
- const retained=await installTheme(seed,Buffer.from(JSON.stringify(manifest)),'.json','local-catalog');app.profiles.mobile.themeId=retained.key;await seed.commit();
+ const retained=await seedLegacyTheme(seed,Buffer.from(JSON.stringify(manifest)),'.json','local-catalog');app.profiles.mobile.themeId=retained.key;await seed.commit();
  const shared=path.join(root,'shared-link');await fs.mkdir(shared);await fs.writeFile(path.join(shared,'catalog.json'),'queued external catalog');
  let incoming=path.join(root,'manual-theme.json');await fs.writeFile(incoming,JSON.stringify({...manifest,name:'手动主题'}));
  const callbacks=new Map(),ipc=new Map(),errors=[],required=[];let boot,window;
